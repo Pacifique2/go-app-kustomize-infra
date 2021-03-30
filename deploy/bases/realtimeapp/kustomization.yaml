@@ -21,8 +21,33 @@ vars:
 
 
 
+    #export GITHUB_TOKEN="xxxx-xxxx"
+    # #export GITHUB_USER=Pacifique2
+    # flux bootstrap github \
+    # --owner=$GITHUB_USER \
+    # --repository=flux-infra \
+    # --branch=main \
+    # --path=app-cluster \
+    # --personal
+
+    # flux create source git go-app-kustomize-infra --url=https://github.com/Pacifique2/go-app-kustomize-infra \
+    # --branch=master \
+    # --interval=30s \
+    # --export > ./app-cluster/realtimeapp-source.yaml
+    # #dev
+    # flux create kustomization realtimeapp-dev \
+    # --source=go-app-kustomize-infra \
+    # --path="./deploy/overlays/dev" \
+    # --prune=true \
+    # --interval=1m \
+    # --validation=client \
+    # --health-check="Deployment/realtime-dev.realtime-dev" \
+    # --health-check="Deployment/redis-dev.realtime-dev" \
+    # --health-check-timeout=2m \
+    # --export > ./app-cluster/realtimeapp-dev.yaml
+    # #prd
     # flux create kustomization realtimeapp-prd \
-    # --source=realtimeapp-infra \
+    # --source=go-app-kustomize-infra \
     # --path="./deploy/overlays/prd" \
     # --prune=true \
     # --interval=1m \
@@ -46,16 +71,5 @@ vars:
     #            --vault-name azkvpxcmp01
 
     
-$password = ConvertTo-SecureString "Risc2019" -AsPlainText -Force
-$Cred = New-Object System.Management.Automation.PSCredential ("username", $password)
-    
-user_credentials = UserCredential('SPT202003@service.hubtotal.net','Risc2019')
-$password = ConvertTo-SecureString "Risc2019" -AsPlainText -Force
-$Cred = New-Object System.Management.Automation.PSCredential ("SPT202003@service.hubtotal.net", $password)
 
-$SharepointURL = "https://totalworkplace.sharepoint.com/sites/OneDataPlatformSquad/Documents%20partages"
-$OutPath = "./20210320200416_azuredatalake_1_Tables.csv"
-Connect to Sharepoint
-Connect-PnPOnline $SharepointURL -Credentials $Cred
-Send File to Teams Sharepoint site
-Add-PnPFile -Folder "Documents/DataGalaxy/automated" -Path $OutPath
+    
