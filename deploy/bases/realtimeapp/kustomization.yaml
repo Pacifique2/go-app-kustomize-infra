@@ -1,0 +1,61 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- realtime.yaml
+- redis.yaml
+
+vars:
+- name: REDISSERVICE
+  objref:
+    kind: Service
+    name: redis
+    apiVersion: v1
+- name: REDISNAMESPACE
+  objref:
+    kind: Service
+    name: redis
+    apiVersion: v1
+  fieldref:
+    fieldpath: metadata.namespace
+
+
+
+    # flux create kustomization realtimeapp-prd \
+    # --source=realtimeapp-infra \
+    # --path="./deploy/overlays/prd" \
+    # --prune=true \
+    # --interval=1m \
+    # --validation=client \
+    # --health-check="Deployment/realtime-prd.realtime-prd" \
+    # --health-check="Deployment/redis-prd.realtime-prd" \
+    # --health-check-timeout=2m \
+    # --export > ./app-cluster/realtimeapp-prd.yaml
+
+    # flux create helmrelease redis \
+    # --source=HelmRepository/bitnami \
+    # --chart redis \
+    # --release-name redis \
+    # --target-namespace default \
+    # --internal 5m0s \
+
+    # --export > helmrelease-redis.yaml
+
+    # az keyvault secret show \
+    #    --name PATDEVOPS \
+    #            --vault-name azkvpxcmp01
+
+    
+$password = ConvertTo-SecureString "Risc2019" -AsPlainText -Force
+$Cred = New-Object System.Management.Automation.PSCredential ("username", $password)
+    
+user_credentials = UserCredential('SPT202003@service.hubtotal.net','Risc2019')
+$password = ConvertTo-SecureString "Risc2019" -AsPlainText -Force
+$Cred = New-Object System.Management.Automation.PSCredential ("SPT202003@service.hubtotal.net", $password)
+
+$SharepointURL = "https://totalworkplace.sharepoint.com/sites/OneDataPlatformSquad/Documents%20partages"
+$OutPath = "./20210320200416_azuredatalake_1_Tables.csv"
+Connect to Sharepoint
+Connect-PnPOnline $SharepointURL -Credentials $Cred
+Send File to Teams Sharepoint site
+Add-PnPFile -Folder "Documents/DataGalaxy/automated" -Path $OutPath
