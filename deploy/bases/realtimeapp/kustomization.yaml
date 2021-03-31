@@ -23,49 +23,89 @@ vars:
 
     #export GITHUB_TOKEN="xxxx-xxxx"
     # #export GITHUB_USER=Pacifique2
-    # flux bootstrap github \
-    # --owner=$GITHUB_USER \
-    # --repository=flux-infra \
-    # --branch=main \
-    # --path=app-cluster \
-    # --personal
+    flux bootstrap github \
+    --owner=$GITHUB_USER \
+    --repository=flux-infra \
+    --branch=main \
+    --path=app-cluster \
+    --personal
 
-    # flux create source git go-app-kustomize-infra --url=https://github.com/Pacifique2/go-app-kustomize-infra \
-    # --branch=master \
-    # --interval=30s \
-    # --export > ./app-cluster/realtimeapp-source.yaml
-    # #dev
-    # flux create kustomization realtimeapp-dev \
-    # --source=go-app-kustomize-infra \
-    # --path="./deploy/overlays/dev" \
-    # --prune=true \
-    # --interval=1m \
-    # --validation=client \
-    # --health-check="Deployment/realtime-dev.realtime-dev" \
-    # --health-check="Deployment/redis-dev.realtime-dev" \
-    # --health-check-timeout=2m \
-    # --export > ./app-cluster/realtimeapp-dev.yaml
-    # #prd
-    # flux create kustomization realtimeapp-prd \
-    # --source=go-app-kustomize-infra \
-    # --path="./deploy/overlays/prd" \
-    # --prune=true \
-    # --interval=1m \
-    # --validation=client \
-    # --health-check="Deployment/realtime-prd.realtime-prd" \
-    # --health-check="Deployment/redis-prd.realtime-prd" \
-    # --health-check-timeout=2m \
-    # --export > ./app-cluster/realtimeapp-prd.yaml
+    flux create source git go-app-kustomize-infra --url=https://github.com/Pacifique2/go-app-kustomize-infra \
+    --branch=master \
+    --interval=30s \
+    --export > ./app-cluster/realtimeapp-source.yaml
+    #dev
+    flux create kustomization realtimeapp-dev \
+    --source=go-app-kustomize-infra \
+    --path="./deploy/overlays/dev" \
+    --prune=true \
+    --interval=1m \
+    --validation=client \
+    --health-check="Deployment/realtime-dev.realtime-dev" \
+    --health-check="Deployment/redis-dev.realtime-dev" \
+    --health-check-timeout=2m \
+    --export > ./app-cluster/realtimeapp-dev.yaml
+    #prd
+    flux create kustomization realtimeapp-prd \
+    --source=go-app-kustomize-infra \
+    --path="./deploy/overlays/prd" \
+    --prune=true \
+    --interval=1m \
+    --validation=client \
+    --health-check="Deployment/realtime-prd.realtime-prd" \
+    --health-check="Deployment/redis-prd.realtime-prd" \
+    --health-check-timeout=2m \
+    --export > ./app-cluster/realtimeapp-prd.yaml
 
-    # flux create helmrelease redis \
-    # --source=HelmRepository/bitnami \
-    # --chart redis \
-    # --release-name redis \
-    # --target-namespace default \
-    # --internal 5m0s \
+    flux create helmrelease redis \
+    --source=HelmRepository/bitnami \
+    --chart redis \
+    --release-name redis \
+    --target-namespace default \
+    --internal 5m0s \
 
-    # --export > helmrelease-redis.yaml
+    --export > helmrelease-redis.yaml
 
+
+# Monitoring
+# weaveworks fluxV2 have made an predefined source for prometheus and grafana
+# hosted on a public repo
+ # create source
+    flux create source git monitoring --url=https://github.com/fluxcd/flux2 \
+    --branch=main \
+    --interval=30s \
+    --export > ./app-cluster/monitoring-source.yaml
+# create kustomization for prometheus and grafana
+ flux create kustomization monitoring \
+    --source=monitoring \
+    --path="./manifests/monitoring" \
+    --prune=true \
+    --interval=1h \
+    --health-check="Deployment/prometheus.flux-system" \
+    --health-check="Deployment/grafana.flux-system" \
+    --export > ./app-cluster/monitoring-kustomization.yaml
+
+    kubectl -n kube-system port-forward svc/grafana 3000:3000
+   # For notifications and alerts via slack, check this out
+    #https://toolkit.fluxcd.io/guides/notifications/
+
+# Create secret for teams Url
+#kubectl -n flux-system create secret generic teams-url \
+#--from-literal=address=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+#Create a notification provider for Slack by referencing the above secret:
+
+
+apiVersion: notification.toolkit.fluxcd.io/v1beta1
+kind: Provider
+metadata:
+  name: teams
+  namespace: flux-system
+spec:
+  type: msteams
+  channel: DataGalaxy
+  secretRef:
+    name: teams-url
+#The provider type can be slack, msteams, discord, rocket, github, gitlab or generic.
     # az keyvault secret show \
     #    --name PATDEVOPS \
     #            --vault-name azkvpxcmp01
