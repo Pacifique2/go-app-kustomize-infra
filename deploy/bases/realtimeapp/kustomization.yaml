@@ -21,95 +21,156 @@ vars:
 
 
 
-    #export GITHUB_TOKEN="xxxx-xxxx"
-    # #export GITHUB_USER=Pacifique2
-    flux bootstrap github \
-    --owner=$GITHUB_USER \
-    --repository=flux-infra \
-    --branch=main \
-    --path=app-cluster \
-    --personal
+#     #export GITHUB_TOKEN="xxxx-xxxx"
+#     # #export GITHUB_USER=Pacifique2
+#     flux bootstrap github \
+#     --owner=$GITHUB_USER \
+#     --repository=flux-infra \
+#     --branch=main \
+#     --path=app-cluster \
+#     --personal
 
-    flux create source git go-app-kustomize-infra --url=https://github.com/Pacifique2/go-app-kustomize-infra \
-    --branch=master \
-    --interval=30s \
-    --export > ./app-cluster/realtimeapp-source.yaml
-    #dev
-    flux create kustomization realtimeapp-dev \
-    --source=go-app-kustomize-infra \
-    --path="./deploy/overlays/dev" \
-    --prune=true \
-    --interval=1m \
-    --validation=client \
-    --health-check="Deployment/realtime-dev.realtime-dev" \
-    --health-check="Deployment/redis-dev.realtime-dev" \
-    --health-check-timeout=2m \
-    --export > ./app-cluster/realtimeapp-dev.yaml
-    #prd
-    flux create kustomization realtimeapp-prd \
-    --source=go-app-kustomize-infra \
-    --path="./deploy/overlays/prd" \
-    --prune=true \
-    --interval=1m \
-    --validation=client \
-    --health-check="Deployment/realtime-prd.realtime-prd" \
-    --health-check="Deployment/redis-prd.realtime-prd" \
-    --health-check-timeout=2m \
-    --export > ./app-cluster/realtimeapp-prd.yaml
+#     flux create source git go-app-kustomize-infra --url=https://github.com/Pacifique2/go-app-kustomize-infra \
+#     --branch=master \
+#     --interval=30s \
+#     --export > ./app-cluster/realtimeapp-source.yaml
+#     #dev
+#     flux create kustomization realtimeapp-dev \
+#     --source=go-app-kustomize-infra \
+#     --path="./deploy/overlays/dev" \
+#     --prune=true \
+#     --interval=1m \
+#     --validation=client \
+#     --health-check="Deployment/realtime-dev.realtime-dev" \
+#     --health-check="Deployment/redis-dev.realtime-dev" \
+#     --health-check-timeout=2m \
+#     --export > ./app-cluster/realtimeapp-dev.yaml
+#     #prd
+#     flux create kustomization realtimeapp-prd \
+#     --source=go-app-kustomize-infra \
+#     --path="./deploy/overlays/prd" \
+#     --prune=true \
+#     --interval=1m \
+#     --validation=client \
+#     --health-check="Deployment/realtime-prd.realtime-prd" \
+#     --health-check="Deployment/redis-prd.realtime-prd" \
+#     --health-check-timeout=2m \
+#     --export > ./app-cluster/realtimeapp-prd.yaml
 
-    flux create helmrelease redis \
-    --source=HelmRepository/bitnami \
-    --chart redis \
-    --release-name redis \
-    --target-namespace default \
-    --internal 5m0s \
+#     flux create helmrelease redis \
+#     --source=HelmRepository/bitnami \
+#     --chart redis \
+#     --release-name redis \
+#     --target-namespace default \
+#     --internal 5m0s \
 
-    --export > helmrelease-redis.yaml
-
-
-# Monitoring
-# weaveworks fluxV2 have made an predefined source for prometheus and grafana
-# hosted on a public repo
- # create source
-    flux create source git monitoring --url=https://github.com/fluxcd/flux2 \
-    --branch=main \
-    --interval=30s \
-    --export > ./app-cluster/monitoring-source.yaml
-# create kustomization for prometheus and grafana
- flux create kustomization monitoring \
-    --source=monitoring \
-    --path="./manifests/monitoring" \
-    --prune=true \
-    --interval=1h \
-    --health-check="Deployment/prometheus.flux-system" \
-    --health-check="Deployment/grafana.flux-system" \
-    --export > ./app-cluster/monitoring-kustomization.yaml
-
-    kubectl -n kube-system port-forward svc/grafana 3000:3000
-   # For notifications and alerts via slack, check this out
-    #https://toolkit.fluxcd.io/guides/notifications/
-
-# Create secret for teams Url
-#kubectl -n flux-system create secret generic teams-url \
-#--from-literal=address=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-#Create a notification provider for Slack by referencing the above secret:
+#     --export > helmrelease-redis.yaml
 
 
-apiVersion: notification.toolkit.fluxcd.io/v1beta1
-kind: Provider
-metadata:
-  name: teams
-  namespace: flux-system
-spec:
-  type: msteams
-  channel: DataGalaxy
-  secretRef:
-    name: teams-url
-#The provider type can be slack, msteams, discord, rocket, github, gitlab or generic.
-    # az keyvault secret show \
-    #    --name PATDEVOPS \
-    #            --vault-name azkvpxcmp01
+# # Monitoring
+# # weaveworks fluxV2 have made an predefined source for prometheus and grafana
+# # hosted on a public repo
+#  # create source
+#     flux create source git monitoring --url=https://github.com/fluxcd/flux2 \
+#     --branch=main \
+#     --interval=30s \
+#     --export > ./app-cluster/monitoring-source.yaml
+# # create kustomization for prometheus and grafana
+#  flux create kustomization monitoring \
+#     --source=monitoring \
+#     --path="./manifests/monitoring" \
+#     --prune=true \
+#     --interval=1h \
+#     --health-check="Deployment/prometheus.flux-system" \
+#     --health-check="Deployment/grafana.flux-system" \
+#     --export > ./app-cluster/monitoring-kustomization.yaml
 
-    
+#     kubectl -n kube-system port-forward svc/grafana 3000:3000
+#    # For notifications and alerts via slack, check this out
+#     #https://toolkit.fluxcd.io/guides/notifications/
 
-    
+# # Create secret for teams Url
+# kubectl -n flux-system create secret generic teams-url \
+# --from-literal=address=https://pacsonkubeit.webhook.office.com/webhookb2/492ad881-bdd3-4452-892a-f9244a4029af@fee437e8-43e9-4e1b-a382-b9822eddced4/IncomingWebhook/91565c53b7bf400688b885c82985eb21/f16269c2-6593-4dc9-8907-f3ac1f7dd780
+# #Create a notification provider for Slack by referencing the above secret:
+
+
+# apiVersion: notification.toolkit.fluxcd.io/v1beta1
+# kind: Provider
+# metadata:
+#   name: teams
+#   namespace: flux-system
+# spec:
+#   type: msteams
+#   channel: DataGalaxy
+#   secretRef:
+#     name: teams-url
+# #The provider type can be slack, msteams, discord, rocket, github, gitlab or generic.
+#     # az keyvault secret show \
+#     #    --name PATDEVOPS \
+#     #            --vault-name azkvpxcmp01
+
+# helm repo add bitnami <url>
+# helm install redis --set bitnami/redis
+# # deploy a helm release from a local chart repo
+# helm install realtimeapp --wait .
+# # uninstall helm charts
+# helm uninstall <releaseName>
+
+# # Use flux    
+# flux bootstrap github \
+#     --owner=$GITHUB_USER \
+#     --repository=helm-infra \
+#     --branch=main \
+#     --path=app-cluster \
+#     --personal
+# # create a source of type helm
+#   flux create source helm bitnami \
+#   --url=https://charts.bitnami.com/bitnami \
+#   --interval=10s \
+#   --export > ./app-cluster/helmrepo-bitnami.yaml
+# # Create a helm release
+#  flux create helmrelease redis \
+#     --source=HelmRepository/bitnami \
+#     --chart redis \
+#     --release-name redis \
+#     --target-namespace default \
+#     --interval 5m0s \
+#     --export > helmrelease-redis.yaml
+
+#     # Create helm charts from a go app
+#     export HELM_EXPERIMENTAL_OCI=1
+#     #save the local charts 
+#     helm chart save . <registry>.azurecr.io./realtimeapp(<repository>):1.0.2
+#     # Login to remote registry as for docker
+#     helm registry login  <registry>.azurecr.io
+#     # push che charts to the remote registry
+#     helm charts push  <registry>.azurecr.io./realtimeapp:1.0.2
+
+# # container registry is protected by a username and a password
+# # so create a secret for apps to authenticate
+# kubectl -n flux-system create secret generic acr \
+# --from-literal=username=hello \$
+# --from-literal=password=password
+# # Create a second helm source
+#   flux create source helm realtimeapp \
+#   --url=https://<registry>.azurecr.io./helm/v1/repo \
+#   --interval=10s \
+#   --secret-ref acr \
+#   --export > ./app-cluster/helmrepo-realtimeapp.yaml
+# # Create a helm release
+#  flux create helmrelease realtimeapp \
+#     --source=HelmRepository/realtimeapp \
+#     --chart realtimeapp \
+#     --release-name realtimeapp \
+#     --target-namespace default \
+#     --interval 5m0s \
+#     --export > helmrelease-realtimeapp.yaml
+
+#     # edit the helmrelease-realtimeapp.yaml  to add at the spec level
+#     values:
+#       redishost: redis-master.default:6379
+#       replicaCount: 2
+#       service:
+#         type: clusterIP
+  
